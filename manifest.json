@@ -1,0 +1,10 @@
+{
+  "display_name": "프리셋 폴더 매니저",
+  "loading_order": 999,
+  "requires": [],
+  "optional": [],
+  "js": "index.js",
+  "css": "style.css",
+  "author": "",
+  "version": "1.0"
+}
