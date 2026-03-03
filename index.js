@@ -663,16 +663,18 @@ async function openFolderManagerPopup() {
             </div>
         </div>
 
+        <div class="stpf-tab-row" role="tablist" aria-label="카테고리">
+            <button type="button" class="menu_button stpf-tab-button is-active" data-tab="folder" role="tab" aria-selected="true">폴더 관리</button>
+            <button type="button" class="menu_button stpf-tab-button" data-tab="preset" role="tab" aria-selected="false">프리셋 분류</button>
+        </div>
+
         <div class="stpf-folder-manager-grid">
-            <section class="stpf-card stpf-folder-controls">
+            <section class="stpf-card stpf-folder-controls stpf-tab-panel is-active" data-panel="folder" role="tabpanel">
                 <div class="stpf-section-title">
                     <i class="fa-solid fa-folder-open"></i>
                     <span>폴더 관리</span>
                 </div>
                 <div class="stpf-folder-picker-row">
-                    <button type="button" class="menu_button stpf-order-folders" title="폴더 순서 변경" aria-label="폴더 순서 변경">
-                        <i class="fa-solid fa-bars"></i>
-                    </button>
                     <select id="stpf-folder-list" class="text_pole" aria-label="폴더 선택"></select>
                     <div class="stpf-folder-actions">
                         <button type="button" class="menu_button stpf-add-folder"><i class="fa-solid fa-plus"></i></button>
@@ -680,9 +682,17 @@ async function openFolderManagerPopup() {
                         <button type="button" class="menu_button stpf-delete-folder"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </div>
+
+                <div class="stpf-folder-order-inline">
+                    <div class="stpf-section-title">
+                        <i class="fa-solid fa-bars"></i>
+                        <span>폴더 순서 변경</span>
+                    </div>
+                    <div class="stpf-folder-order-list stpf-folder-order-inline-list" id="stpf-folder-order-list"></div>
+                </div>
             </section>
 
-            <section class="stpf-card stpf-preset-controls">
+            <section class="stpf-card stpf-preset-controls stpf-tab-panel" data-panel="preset" role="tabpanel" hidden>
                 <div class="stpf-section-title-row">
                     <div class="stpf-section-title">
                         <i class="fa-solid fa-list-check"></i>
@@ -729,7 +739,25 @@ async function openFolderManagerPopup() {
     const bulkFolderSelect = content.querySelector("#stpf-bulk-folder");
     const resultCount = content.querySelector("#stpf-result-count");
     const presetList = content.querySelector("#stpf-preset-list");
+    const folderOrderList = content.querySelector("#stpf-folder-order-list");
+    const tabRow = content.querySelector(".stpf-tab-row");
+    const tabButtons = Array.from(content.querySelectorAll(".stpf-tab-button"));
+    const tabPanels = Array.from(content.querySelectorAll(".stpf-tab-panel"));
     let previewFolderId = "";
+
+    function setActiveTab(tabName) {
+        for (const button of tabButtons) {
+            const isActive = button.dataset.tab === tabName;
+            button.classList.toggle("is-active", isActive);
+            button.setAttribute("aria-selected", isActive ? "true" : "false");
+        }
+
+        for (const panel of tabPanels) {
+            const isActive = panel.dataset.panel === tabName;
+            panel.classList.toggle("is-active", isActive);
+            panel.hidden = !isActive;
+        }
+    }
 
     function getSearchKeyword() {
         return String(presetSearchInput?.value || "").toLowerCase();
@@ -756,6 +784,69 @@ async function openFolderManagerPopup() {
         }
 
         populateFolderSelect(bulkFolderSelect, ALL_FOLDER_ID, true, true);
+        refreshFolderOrderList();
+    }
+
+    function refreshFolderOrderList() {
+        const folders = getState().folders;
+        folderOrderList.innerHTML = "";
+
+        if (!folders.length) {
+            const empty = document.createElement("div");
+            empty.className = "stpf-folder-order-empty";
+            empty.textContent = "등록된 폴더가 없습니다.";
+            folderOrderList.appendChild(empty);
+            return;
+        }
+
+        for (let index = 0; index < folders.length; index++) {
+            const folder = folders[index];
+            const row = document.createElement("div");
+            row.className = "stpf-folder-order-row";
+
+            const name = document.createElement("div");
+            name.className = "stpf-folder-order-name";
+            name.textContent = folder.name;
+
+            const actions = document.createElement("div");
+            actions.className = "stpf-folder-order-actions";
+
+            const upButton = document.createElement("button");
+            upButton.type = "button";
+            upButton.className = "menu_button stpf-folder-order-up";
+            upButton.innerHTML = '<i class="fa-solid fa-arrow-up"></i>';
+            upButton.disabled = index === 0;
+
+            const downButton = document.createElement("button");
+            downButton.type = "button";
+            downButton.className = "menu_button stpf-folder-order-down";
+            downButton.innerHTML = '<i class="fa-solid fa-arrow-down"></i>';
+            downButton.disabled = index === folders.length - 1;
+
+            upButton.addEventListener("click", () => {
+                if (moveFolderByIndex(index, -1)) {
+                    refreshFolderControls(folder.id);
+                    refreshPresetList();
+                    ensureFolderFilterSelect();
+                    applyPresetFilter(false);
+                }
+            });
+
+            downButton.addEventListener("click", () => {
+                if (moveFolderByIndex(index, 1)) {
+                    refreshFolderControls(folder.id);
+                    refreshPresetList();
+                    ensureFolderFilterSelect();
+                    applyPresetFilter(false);
+                }
+            });
+
+            actions.appendChild(upButton);
+            actions.appendChild(downButton);
+            row.appendChild(name);
+            row.appendChild(actions);
+            folderOrderList.appendChild(row);
+        }
     }
 
     function isDuplicateFolderName(name, excludeFolderId = "") {
@@ -956,20 +1047,11 @@ async function openFolderManagerPopup() {
             applyPresetFilter(true);
         });
 
-    content
-        .querySelector(".stpf-order-folders")
-        .addEventListener("click", async () => {
-            const changed = await showStpfFolderOrderCard();
-            if (!changed) {
-                return;
-            }
-
-            const currentSelectedFolderId = folderList.value;
-            refreshFolderControls(currentSelectedFolderId);
-            refreshPresetList();
-            ensureFolderFilterSelect();
-            applyPresetFilter(false);
-        });
+    tabRow?.addEventListener("click", (event) => {
+        const button = event.target?.closest(".stpf-tab-button");
+        if (!button) return;
+        setActiveTab(button.dataset.tab || "folder");
+    });
 
     content.querySelector(".stpf-apply-bulk").addEventListener("click", () => {
         const folderId = bulkFolderSelect.value;
@@ -1023,6 +1105,7 @@ async function openFolderManagerPopup() {
 
     refreshFolderControls();
     refreshPresetList();
+    setActiveTab("folder");
 
     const closePopup = () => {
         document.removeEventListener("keydown", onEscClose);
@@ -1050,106 +1133,6 @@ async function openFolderManagerPopup() {
 
     ensureFolderFilterSelect();
     applyPresetFilter(true);
-}
-
-function showStpfFolderOrderCard() {
-    return new Promise((resolve) => {
-        const overlay = document.createElement("div");
-        overlay.className = "stpf-mini-overlay";
-        overlay.innerHTML = `
-            <div class="stpf-mini-card stpf-folder-order-card" role="dialog" aria-modal="true">
-                <div class="stpf-mini-title">폴더 순서 변경</div>
-                <div class="stpf-mini-message">위/아래 버튼으로 폴더 순서를 조정하세요.</div>
-                <div class="stpf-folder-order-list"></div>
-                <div class="stpf-mini-actions">
-                    <button type="button" class="menu_button stpf-mini-confirm stpf-folder-order-close">닫기</button>
-                </div>
-            </div>
-        `;
-
-        const listElement = overlay.querySelector(".stpf-folder-order-list");
-        const closeButton = overlay.querySelector(".stpf-folder-order-close");
-        let hasChanged = false;
-
-        const render = () => {
-            const folders = getState().folders;
-            listElement.innerHTML = "";
-
-            if (!folders.length) {
-                const empty = document.createElement("div");
-                empty.className = "stpf-folder-order-empty";
-                empty.textContent = "등록된 폴더가 없습니다.";
-                listElement.appendChild(empty);
-                return;
-            }
-
-            for (let index = 0; index < folders.length; index++) {
-                const folder = folders[index];
-                const row = document.createElement("div");
-                row.className = "stpf-folder-order-row";
-
-                const name = document.createElement("div");
-                name.className = "stpf-folder-order-name";
-                name.textContent = folder.name;
-
-                const actions = document.createElement("div");
-                actions.className = "stpf-folder-order-actions";
-
-                const upButton = document.createElement("button");
-                upButton.type = "button";
-                upButton.className = "menu_button stpf-folder-order-up";
-                upButton.innerHTML = '<i class="fa-solid fa-arrow-up"></i>';
-                upButton.disabled = index === 0;
-
-                const downButton = document.createElement("button");
-                downButton.type = "button";
-                downButton.className = "menu_button stpf-folder-order-down";
-                downButton.innerHTML = '<i class="fa-solid fa-arrow-down"></i>';
-                downButton.disabled = index === folders.length - 1;
-
-                upButton.addEventListener("click", () => {
-                    if (moveFolderByIndex(index, -1)) {
-                        hasChanged = true;
-                        render();
-                    }
-                });
-
-                downButton.addEventListener("click", () => {
-                    if (moveFolderByIndex(index, 1)) {
-                        hasChanged = true;
-                        render();
-                    }
-                });
-
-                actions.appendChild(upButton);
-                actions.appendChild(downButton);
-                row.appendChild(name);
-                row.appendChild(actions);
-                listElement.appendChild(row);
-            }
-        };
-
-        const finish = () => {
-            document.removeEventListener("keydown", onKeyDown, true);
-            overlay.remove();
-            resolve(hasChanged);
-        };
-
-        const onKeyDown = (event) => {
-            if (event.key === "Escape" || event.key === "Enter") {
-                event.preventDefault();
-                event.stopPropagation();
-                finish();
-            }
-        };
-
-        closeButton.addEventListener("click", finish);
-
-        render();
-        document.addEventListener("keydown", onKeyDown, true);
-        document.body.appendChild(overlay);
-        closeButton.focus();
-    });
 }
 
 function showStpfInputCard({

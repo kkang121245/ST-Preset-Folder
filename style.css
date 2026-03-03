@@ -93,6 +93,46 @@
     gap: 12px;
 }
 
+.stpf-tab-row {
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    padding: 4px;
+    border: 1px solid var(--stpf-border);
+    border-radius: 14px;
+    background: var(--stpf-panel);
+    gap: 6px;
+}
+
+.stpf-folder-popup .stpf-tab-row .stpf-tab-button {
+    flex: 1 1 0;
+    width: auto !important;
+    min-width: 0;
+    height: 34px !important;
+    padding: 6px 12px !important;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--stpf-muted);
+    white-space: nowrap;
+}
+
+.stpf-folder-popup .stpf-tab-row .stpf-tab-button.is-active {
+    border-color: var(--stpf-border-strong);
+    background: var(--stpf-accent-soft);
+    color: var(--stpf-accent);
+}
+
+.stpf-tab-panel {
+    display: none !important;
+    min-height: 0;
+}
+
+.stpf-tab-panel.is-active {
+    display: flex !important;
+}
+
 .stpf-folder-controls,
 .stpf-preset-controls {
     display: flex;
@@ -110,20 +150,16 @@
     min-height: 0;
 }
 
+.stpf-folder-controls.stpf-tab-panel {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
 .stpf-folder-picker-row {
     display: flex;
     align-items: center;
     flex-wrap: nowrap;
     gap: 8px;
-}
-
-.stpf-order-folders {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    width: 32px;
-    min-width: 32px;
-    padding: 0;
 }
 
 .stpf-folder-picker-row > #stpf-folder-list {
@@ -135,6 +171,25 @@
     display: flex;
     flex-wrap: nowrap;
     gap: 6px;
+}
+
+.stpf-folder-order-inline {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    margin-top: 10px;
+    min-height: 0;
+    gap: 8px;
+}
+
+.stpf-folder-order-inline-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    border: 1px solid var(--stpf-border);
+    border-radius: 12px;
+    padding: 8px;
+    background: var(--stpf-panel-strong);
 }
 
 .stpf-folder-actions .menu_button {
@@ -505,14 +560,9 @@
     color: #7a4a3f;
 }
 
-.stpf-folder-order-card {
-    width: min(520px, 94vw);
-}
-
 .stpf-folder-order-list {
     display: flex;
     flex-direction: column;
-    max-height: min(55vh, 420px);
     padding-right: 2px;
     gap: 6px;
     overflow-y: auto;
@@ -587,9 +637,6 @@
         justify-content: flex-end;
     }
 
-    .stpf-folder-order-card {
-        width: min(96vw, 560px);
-    }
 }
 
 @media (max-width: 480px) {
