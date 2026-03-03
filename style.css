@@ -98,7 +98,7 @@
     align-items: center;
     position: relative;
     z-index: 1;
-    padding: 4px;
+    padding: 4px 8px;
     border: 1px solid var(--stpf-border);
     border-radius: 14px;
     background: var(--stpf-panel);
@@ -315,6 +315,7 @@
     border: none !important;
     background: transparent !important;
     box-shadow: none !important;
+    margin: 0 !important;
 }
 
 .stpf-preset-list {
@@ -361,7 +362,7 @@
 }
 
 .stpf-folder-popup .text_pole {
-    min-height: 32px !important;
+    height: 32px !important;
     border: 1px solid var(--stpf-border) !important;
     border-radius: 12px !important;
     background: #fffdf8 !important;
@@ -370,7 +371,7 @@
 
 #stpf-folder-list,
 #stpf-bulk-folder {
-    min-height: 32px;
+    height: 32px;
     padding: 0 34px 0 12px !important;
     border: 1px solid var(--stpf-border) !important;
     border-radius: 12px !important;
@@ -401,8 +402,9 @@
     align-items: center;
     width: 32px;
     height: 32px;
+    font-size: 12px !important;
     padding: 6px 11px;
-    border: 1px solid var(--stpf-border-strong);
+    border: 1px solid var(--stpf-border-strong) !important;
     border-radius: 12px;
     background: var(--stpf-accent-soft);
     color: var(--stpf-accent);
@@ -563,7 +565,6 @@
 .stpf-folder-order-list {
     display: flex;
     flex-direction: column;
-    padding-right: 2px;
     gap: 6px;
     overflow-y: auto;
 }
@@ -595,8 +596,9 @@
 }
 
 .stpf-folder-order-actions .menu_button {
-    width: 34px;
-    min-width: 34px;
+    width: 25px;
+    height: 25px;
+    font-size: 12px !important;
     padding: 0;
 }
 
@@ -640,6 +642,9 @@
 }
 
 @media (max-width: 480px) {
+    .stpf-hero {
+      display: none !important;
+    }
     .stpf-preset-row {
         grid-template-columns: 20px minmax(0, 1fr);
         grid-template-areas:
