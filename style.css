@@ -10,6 +10,7 @@
 .stpf-folder-popup,
 .stpf-mini-card {
     --stpf-bg: #f6f0e3;
+    --stpf-bg-sub: #fffdf8;
     --stpf-panel: #fffaf0;
     --stpf-panel-strong: #f1e7d4;
     --stpf-text: #2c3a35;
@@ -301,7 +302,7 @@
     padding: 0 10px;
     border: 1px solid var(--stpf-border);
     border-radius: 12px;
-    background: #fffdf8;
+    background: var(--stpf-bg-sub);
     gap: 8px;
 }
 
@@ -365,7 +366,7 @@
     height: 32px !important;
     border: 1px solid var(--stpf-border) !important;
     border-radius: 12px !important;
-    background: #fffdf8 !important;
+    background: var(--stpf-bg-sub) !important;
     color: var(--stpf-text) !important;
 }
 
@@ -375,7 +376,7 @@
     padding: 0 34px 0 12px !important;
     border: 1px solid var(--stpf-border) !important;
     border-radius: 12px !important;
-    background: #fffdf8;
+    background: var(--stpf-bg-sub);
     background-image:
         linear-gradient(45deg, transparent 50%, var(--stpf-muted) 50%),
         linear-gradient(135deg, var(--stpf-muted) 50%, transparent 50%);
@@ -496,7 +497,7 @@
 
 .stpf-mini-preset-name {
     padding: 8px 10px;
-    border: 1px solid #d3c6af;
+    border: 1px solid var(--stpf-border);
     border-radius: 12px;
     background: #f7efdf;
     color: #2c3a35;
@@ -508,17 +509,17 @@
 
 input.stpf-mini-input {
     height: 38px;
-    border: 1px solid #d3c6af !important;
+    border: 1px solid var(--stpf-border) !important;
     border-radius: 12px;
-    background: #fffdf8;
+    background: var(--stpf-bg-sub);
 }
 
 .stpf-mini-select {
     height: 38px !important;
     padding: 0 34px 0 12px !important;
-    border: 1px solid #d3c6af !important;
+    border: 1px solid var(--stpf-border) !important;
     border-radius: 12px !important;
-    background: #fffdf8 !important;
+    background: var(--stpf-bg-sub) !important;
     background-image:
         linear-gradient(45deg, transparent 50%, #6c7e78 50%),
         linear-gradient(135deg, #6c7e78 50%, transparent 50%) !important;
