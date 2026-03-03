@@ -476,9 +476,9 @@
     flex-direction: column;
     width: min(420px, 92vw);
     padding: 14px;
-    border: 1px solid var(--stpf-border);
+    border: 1px solid var(--stpf-border) !important;
     border-radius: 16px;
-    background: var(--stpf-bg);
+    background: var(--stpf-bg) !important;
     color: #2c3a35;
     box-shadow: 0 10px 26px rgba(72, 88, 77, 0.2);
     gap: 10px;
@@ -506,9 +506,9 @@
     text-overflow: ellipsis;
 }
 
-.stpf-mini-input {
+input.stpf-mini-input {
     height: 38px;
-    border: 1px solid #d3c6af;
+    border: 1px solid #d3c6af !important;
     border-radius: 12px;
     background: #fffdf8;
 }
@@ -543,7 +543,7 @@
     width: auto;
     height: 34px !important;
     padding: 6px 12px;
-    border: 1px solid #8aa49c;
+    border: 1px solid #8aa49c !important;
     border-radius: 12px;
     background: #dce9e3;
     color: #40665c;
@@ -551,7 +551,7 @@
 }
 
 .stpf-mini-card .stpf-mini-confirm {
-    border-color: #5b7e75;
+    border-color: #5b7e75 !important;
     background: linear-gradient(140deg, #87a89f 0%, #6e9188 100%);
     color: #f7fbfa;
 }
