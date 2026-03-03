@@ -193,11 +193,6 @@
     background: var(--stpf-panel-strong);
 }
 
-.stpf-folder-actions .menu_button {
-    min-width: 32px;
-    padding: 0 10px;
-}
-
 .stpf-card {
     position: relative;
 }
@@ -260,7 +255,6 @@
 .stpf-bulk-left,
 .stpf-bulk-right {
     display: flex;
-    align-items: stretch;
     flex-wrap: wrap;
     gap: 6px;
 }
@@ -271,6 +265,7 @@
 
 .stpf-bulk-right {
     justify-content: flex-end;
+    align-items: center;
     margin-left: auto;
 }
 
