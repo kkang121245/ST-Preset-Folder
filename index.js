@@ -14,6 +14,7 @@ const autoAssignSuppressNames = new Set();
 let knownPresetNames = new Set();
 const autoAssignQueue = [];
 let autoAssignProcessing = false;
+let openaiRenameInProgress = false;
 
 function suppressAutoAssignForName(presetName) {
     if (!presetName) return;
@@ -122,6 +123,27 @@ function getOpenAIPresetNames() {
     return Array.from(select.options)
         .map((option) => String(option.textContent || "").trim())
         .filter(Boolean);
+}
+
+function selectOpenAIPresetByName(presetName, triggerChange = true) {
+    const select = getOpenAIPresetSelect();
+    if (!select || !presetName) return false;
+
+    for (const option of Array.from(select.options)) {
+        const optionName = String(option.textContent || "").trim();
+        if (optionName !== presetName) continue;
+
+        select.value = option.value;
+        option.selected = true;
+
+        if (triggerChange) {
+            $(select).trigger("change");
+        }
+
+        return true;
+    }
+
+    return false;
 }
 
 function getAssignedFolderId(presetName) {
@@ -291,6 +313,10 @@ function populateFolderFilterSelect(selectElement) {
 }
 
 function applyPresetFilter(triggerChangeIfNeeded) {
+    if (openaiRenameInProgress) {
+        return;
+    }
+
     const select = getOpenAIPresetSelect();
     const folderFilter = document.querySelector("#stpf-folder-filter");
     if (!select || !folderFilter) {
@@ -591,55 +617,55 @@ async function openRenamePresetWithFolderPopup() {
 
     const selectedFolderId = folderSelect.value;
     let finalPresetName = oldName;
+    let didRename = false;
 
     if (requestedName !== oldName) {
+        openaiRenameInProgress = true;
+
         if (equalsIgnoreCaseAndAccents(oldName, requestedName)) {
+            openaiRenameInProgress = false;
             toastr.warning("대소문자/악센트를 제외하면 같은 이름입니다.");
             return;
         }
 
         suppressAutoAssignForName(requestedName);
 
-        await eventSource.emit(event_types.PRESET_RENAMED_BEFORE, {
-            apiId: "openai",
-            oldName,
-            newName: requestedName,
-        });
+        try {
+            await eventSource.emit(event_types.PRESET_RENAMED_BEFORE, {
+                apiId: "openai",
+                oldName,
+                newName: requestedName,
+            });
 
-        const extensions = presetManager.readPresetExtensionField({
-            name: oldName,
-            path: "",
-        });
-        await presetManager.renamePreset(requestedName);
-        await presetManager.writePresetExtensionField({
-            name: requestedName,
-            path: "",
-            value: extensions,
-        });
-        await eventSource.emit(event_types.PRESET_RENAMED, {
-            apiId: "openai",
-            oldName,
-            newName: requestedName,
-        });
+            const extensions = presetManager.readPresetExtensionField({
+                name: oldName,
+                path: "",
+            });
+            await presetManager.renamePreset(requestedName);
+            await presetManager.writePresetExtensionField({
+                name: requestedName,
+                path: "",
+                value: extensions,
+            });
+            await eventSource.emit(event_types.PRESET_RENAMED, {
+                apiId: "openai",
+                oldName,
+                newName: requestedName,
+            });
 
-        finalPresetName = requestedName;
+            finalPresetName = requestedName;
+            didRename = true;
+        } finally {
+            openaiRenameInProgress = false;
+        }
     }
 
     setAssignedFolderId(finalPresetName, selectedFolderId);
 
-    const select = getOpenAIPresetSelect();
-    for (const option of Array.from(select?.options || [])) {
-        if (String(option.textContent || "").trim() === finalPresetName) {
-            option.selected = true;
-            break;
-        }
+    if (didRename) {
+        selectOpenAIPresetByName(finalPresetName, true);
+        $("#update_oai_preset").trigger("click");
     }
-
-    if (select) {
-        $(select).trigger("change");
-    }
-
-    $("#update_oai_preset").trigger("click");
 
     ensureFolderFilterSelect();
     applyPresetFilter(true);
