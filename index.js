@@ -125,6 +125,75 @@ function getOpenAIPresetNames() {
         .filter(Boolean);
 }
 
+function getSelectedOpenAIPresetName() {
+    const select = getOpenAIPresetSelect();
+    const selectedOption = select?.selectedOptions?.[0] || null;
+    if (!selectedOption) return "";
+
+    return String(selectedOption.textContent || "").trim();
+}
+
+function getNormalizedPresetFolderId(presetName) {
+    if (!presetName) return UNCATEGORIZED_FOLDER_ID;
+
+    const state = getState();
+    const assignedFolderId = state.assignments[presetName] || "";
+    if (!assignedFolderId) {
+        return UNCATEGORIZED_FOLDER_ID;
+    }
+
+    const hasFolder = state.folders.some((folder) => folder.id === assignedFolderId);
+    return hasFolder ? assignedFolderId : UNCATEGORIZED_FOLDER_ID;
+}
+
+function isPresetIncludedInFilter(filterFolderId, presetFolderId) {
+    if (filterFolderId === ALL_FOLDER_ID) {
+        return true;
+    }
+
+    if (filterFolderId === UNCATEGORIZED_FOLDER_ID) {
+        return presetFolderId === UNCATEGORIZED_FOLDER_ID;
+    }
+
+    return filterFolderId === presetFolderId;
+}
+
+function syncFolderFilterToSelectedPreset() {
+    if (openaiRenameInProgress) {
+        return false;
+    }
+
+    const folderFilter = document.querySelector("#stpf-folder-filter");
+    if (!folderFilter) {
+        return false;
+    }
+
+    const presetName = getSelectedOpenAIPresetName();
+    if (!presetName) {
+        return false;
+    }
+
+    const targetFolderId = getNormalizedPresetFolderId(presetName);
+    const currentFolderId = folderFilter.value || ALL_FOLDER_ID;
+    if (isPresetIncludedInFilter(currentFolderId, targetFolderId)) {
+        return false;
+    }
+
+    const availableValues = new Set(
+        Array.from(folderFilter.options).map((option) => option.value),
+    );
+    const resolvedFolderId = availableValues.has(targetFolderId)
+        ? targetFolderId
+        : ALL_FOLDER_ID;
+
+    folderFilter.value = resolvedFolderId;
+
+    const state = getState();
+    state.selectedFolderId = resolvedFolderId;
+    saveState();
+    return true;
+}
+
 function selectOpenAIPresetByName(presetName, triggerChange = true) {
     const select = getOpenAIPresetSelect();
     if (!select || !presetName) return false;
@@ -447,6 +516,8 @@ function attachEvents() {
     });
 
     eventSource.on(event_types.OAI_PRESET_CHANGED_AFTER, () => {
+        ensureFolderFilterSelect();
+        syncFolderFilterToSelectedPreset();
         applyPresetFilter(false);
     });
 }
