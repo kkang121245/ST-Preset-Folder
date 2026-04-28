@@ -60,9 +60,15 @@ function ensureState() {
   }
 
   const state = extension_settings[EXTENSION_KEY];
-  state.folders = Array.isArray(state.folders) ? state.folders : [];
-  state.assignments = state.assignments && typeof state.assignments === "object" ? state.assignments : {};
-  state.selectedFolderId = typeof state.selectedFolderId === "string" ? state.selectedFolderId : ALL_FOLDER_ID;
+  if (!Array.isArray(state.folders)) {
+    state.folders = [];
+  }
+  if (!state.assignments || typeof state.assignments !== "object") {
+    state.assignments = {};
+  }
+  if (typeof state.selectedFolderId !== "string") {
+    state.selectedFolderId = ALL_FOLDER_ID;
+  }
 }
 
 function getState() {
@@ -78,6 +84,8 @@ function normalizeState() {
   const state = getState();
   const existingFolderIds = new Set(state.folders.map((folder) => folder.id));
   const presetNames = new Set(getOpenAIPresetNames());
+  
+  let isChanged = false;
 
   for (const key of Object.keys(state.assignments)) {
     const folderId = state.assignments[key];
@@ -86,14 +94,18 @@ function normalizeState() {
 
     if (!hasPreset || !hasFolder) {
       delete state.assignments[key];
+      isChanged = true;
     }
   }
 
   if (state.selectedFolderId !== ALL_FOLDER_ID && state.selectedFolderId !== UNCATEGORIZED_FOLDER_ID && !existingFolderIds.has(state.selectedFolderId)) {
     state.selectedFolderId = ALL_FOLDER_ID;
+    isChanged = true;
   }
-
-  saveState();
+  
+  if (isChanged) {
+    saveState();
+  }
 }
 
 function getOpenAIPresetSelect() {
