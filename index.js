@@ -1080,7 +1080,7 @@ async function openFolderManagerPopup() {
     refreshFolderControls();
     refreshPresetList();
     ensureFolderFilterSelect();
-    applyPresetFilter(true);
+    applyPresetFilter(false);
   });
 
   tabRow?.addEventListener("click", (event) => {
@@ -1155,7 +1155,7 @@ async function openFolderManagerPopup() {
   document.body.appendChild(content);
 
   ensureFolderFilterSelect();
-  applyPresetFilter(true);
+  applyPresetFilter(false);
 }
 
 function showStpfInputCard({title, message, defaultValue = "", confirmText = "저장", cancelText = "취소"}) {
