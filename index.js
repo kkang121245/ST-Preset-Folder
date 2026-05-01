@@ -84,7 +84,7 @@ function normalizeState() {
   const state = getState();
   const existingFolderIds = new Set(state.folders.map((folder) => folder.id));
   const presetNames = new Set(getOpenAIPresetNames());
-  
+
   let isChanged = false;
 
   for (const key of Object.keys(state.assignments)) {
@@ -102,7 +102,7 @@ function normalizeState() {
     state.selectedFolderId = ALL_FOLDER_ID;
     isChanged = true;
   }
-  
+
   if (isChanged) {
     saveState();
   }
@@ -433,6 +433,7 @@ function attachPresetSelectObserver() {
   const observer = new MutationObserver(() => {
     ensureFolderFilterSelect();
     normalizeState();
+    syncFolderFilterToSelectedPreset();
     applyPresetFilter(true);
     queueAutoAssignForNewPresets();
   });
@@ -552,7 +553,18 @@ async function processAutoAssignQueue() {
       const resolvedFolderId = folderId === null ? UNCATEGORIZED_FOLDER_ID : folderId;
 
       setAssignedFolderId(presetName, resolvedFolderId);
+
+      const folderFilter = document.querySelector("#stpf-folder-filter");
+      if (folderFilter) {
+        folderFilter.value = resolvedFolderId;
+        const state = getState();
+        state.selectedFolderId = resolvedFolderId;
+        saveState();
+      }
+
       applyPresetFilter(true);
+
+      selectOpenAIPresetByName(presetName, true);
     }
   } finally {
     autoAssignProcessing = false;
@@ -710,6 +722,14 @@ async function openRenamePresetWithFolderPopup() {
 
   setAssignedFolderId(finalPresetName, selectedFolderId);
 
+  const folderFilter = document.querySelector("#stpf-folder-filter");
+  if (folderFilter) {
+    folderFilter.value = selectedFolderId;
+    const state = getState();
+    state.selectedFolderId = selectedFolderId;
+    saveState();
+  }
+
   if (didRename) {
     selectOpenAIPresetByName(finalPresetName, true);
     $("#update_oai_preset").trigger("click");
@@ -717,6 +737,8 @@ async function openRenamePresetWithFolderPopup() {
 
   ensureFolderFilterSelect();
   applyPresetFilter(true);
+
+  selectOpenAIPresetByName(finalPresetName, false);
 }
 
 async function openFolderManagerPopup() {
